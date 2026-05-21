@@ -2,6 +2,8 @@ import os
 from io import BytesIO
 from aiogram import Router, F, Bot
 from aiogram.types import Message
+from bot.filters.auth import AuthorizedUser
+from config import ALLOWED_USERS
 from bot.services.ai_router import ask_ai
 from bot.services.whisper_client import transcribe_audio
 from bot.services.memory import get_level
@@ -15,7 +17,7 @@ with open(prompt_path, "r", encoding="utf-8") as f:
     CHAT_SYSTEM_PROMPT = f.read()
 
 
-@router.message(F.text)
+@router.message(F.text, AuthorizedUser(ALLOWED_USERS))
 async def chat_handler(message: Message, bot: Bot):
     uid = message.from_user.id
     level = get_level(uid)
@@ -27,7 +29,7 @@ async def chat_handler(message: Message, bot: Bot):
     await message.answer(response, reply_markup=main_menu())
 
 
-@router.message(F.voice)
+@router.message(F.voice, AuthorizedUser(ALLOWED_USERS))
 async def voice_handler(message: Message, bot: Bot):
     uid = message.from_user.id
     file = await bot.get_file(message.voice.file_id)

@@ -1,8 +1,9 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
+from bot.filters.auth import AuthorizedCallback
+from config import ALLOWED_USERS, AVAILABLE_MODELS
 from bot.services.memory import set_level, set_model, get_level, get_model
-from config import AVAILABLE_MODELS
 from bot.keyboards.menus import main_menu, settings_menu, level_menu, model_menu
 
 router = Router()
@@ -14,7 +15,7 @@ LEVEL_NAMES = {
 }
 
 
-@router.callback_query(F.data == "mode_settings")
+@router.callback_query(F.data == "mode_settings", AuthorizedCallback(ALLOWED_USERS))
 async def settings_show(callback: CallbackQuery):
     uid = callback.from_user.id
     level_icon = LEVEL_NAMES.get(get_level(uid), get_level(uid))
@@ -33,7 +34,7 @@ async def settings_show(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data == "settings_level")
+@router.callback_query(F.data == "settings_level", AuthorizedCallback(ALLOWED_USERS))
 async def settings_level_show(callback: CallbackQuery):
     uid = callback.from_user.id
     level_icon = LEVEL_NAMES.get(get_level(uid), get_level(uid))
@@ -46,7 +47,7 @@ async def settings_level_show(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data == "settings_model")
+@router.callback_query(F.data == "settings_model", AuthorizedCallback(ALLOWED_USERS))
 async def settings_model_show(callback: CallbackQuery):
     uid = callback.from_user.id
     model_icon = AVAILABLE_MODELS.get(get_model(uid), get_model(uid))
@@ -59,12 +60,12 @@ async def settings_model_show(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data == "settings_main")
+@router.callback_query(F.data == "settings_main", AuthorizedCallback(ALLOWED_USERS))
 async def settings_back(callback: CallbackQuery):
     await settings_show(callback)
 
 
-@router.callback_query(F.data.startswith("level_"))
+@router.callback_query(F.data.startswith("level_"), AuthorizedCallback(ALLOWED_USERS))
 async def level_select(callback: CallbackQuery):
     level = callback.data.replace("level_", "")
     set_level(callback.from_user.id, level)
@@ -80,7 +81,7 @@ async def level_select(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("model_"))
+@router.callback_query(F.data.startswith("model_"), AuthorizedCallback(ALLOWED_USERS))
 async def model_select(callback: CallbackQuery):
     model = callback.data.replace("model_", "")
     set_model(callback.from_user.id, model)

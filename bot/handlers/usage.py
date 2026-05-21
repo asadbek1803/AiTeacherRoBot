@@ -1,6 +1,8 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
+from bot.filters.auth import AuthorizedCallback
+from config import ALLOWED_USERS
 from bot.services.memory import get_model
 from bot.services.groq_client import get_remaining_requests as groq_req
 from bot.services.groq_client import get_remaining_tokens as groq_tok
@@ -37,7 +39,7 @@ def _build_chat_section(model, limits):
     )
 
 
-@router.callback_query(F.data == "mode_usage")
+@router.callback_query(F.data == "mode_usage", AuthorizedCallback(ALLOWED_USERS))
 async def usage_show(callback: CallbackQuery):
     uid = callback.from_user.id
     active_model = get_model(uid)

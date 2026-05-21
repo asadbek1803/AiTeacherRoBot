@@ -43,3 +43,38 @@ def model_menu():
             [InlineKeyboardButton(text="🔙 Orqaga", callback_data="settings_main")],
         ]
     )
+
+
+def request_access_menu():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📩 So'rov yuborish", callback_data="request_access")],
+        ]
+    )
+
+
+def admin_menu(pending_count: int):
+    label = f"📋 So'rovlar ({pending_count})" if pending_count > 0 else "📋 So'rovlar (0)"
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=label, callback_data="admin_show_requests")],
+            [InlineKeyboardButton(text="🔄 Yangilash", callback_data="admin_refresh")],
+            [InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_menu")],
+        ]
+    )
+
+
+def admin_request_keyboard(user_id: int):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Tasdiqlash", callback_data=f"admin_approve_{user_id}"
+                ),
+                InlineKeyboardButton(
+                    text="❌ Rad etish", callback_data=f"admin_reject_{user_id}"
+                ),
+            ],
+            [InlineKeyboardButton(text="🔙 Orqaga", callback_data="admin_back")],
+        ]
+    )

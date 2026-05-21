@@ -1,6 +1,8 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
+from bot.filters.auth import AuthorizedUser, AuthorizedCallback
 from bot.filters.mode import ModeFilter
+from config import ALLOWED_USERS
 from bot.services.groq_client import ask_ai
 from bot.services.memory import get_level, update_user, get_user, set_mode
 from bot.keyboards.menus import main_menu, topik_menu
@@ -44,7 +46,7 @@ TOPIK_CHECK_PROMPT = (
 )
 
 
-@router.callback_query(F.data == "mode_topik")
+@router.callback_query(F.data == "mode_topik", AuthorizedCallback(ALLOWED_USERS))
 async def topik_menu_show(callback: CallbackQuery):
     set_mode(callback.from_user.id, "topik")
     await callback.message.edit_text(
@@ -54,7 +56,7 @@ async def topik_menu_show(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("topik_"))
+@router.callback_query(F.data.startswith("topik_"), AuthorizedCallback(ALLOWED_USERS))
 async def topik_generate(callback: CallbackQuery):
     topic = callback.data.replace("topik_", "")
     level = get_level(callback.from_user.id)
@@ -73,7 +75,7 @@ async def topik_generate(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.message(ModeFilter("topik"), F.text)
+@router.message(ModeFilter("topik"), F.text, AuthorizedUser(ALLOWED_USERS))
 async def topik_answer(message: Message):
     level = get_level(message.from_user.id)
     user_data = get_user(message.from_user.id)

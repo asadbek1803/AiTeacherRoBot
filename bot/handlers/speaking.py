@@ -1,6 +1,8 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
+from bot.filters.auth import AuthorizedUser, AuthorizedCallback
 from bot.filters.mode import ModeFilter
+from config import ALLOWED_USERS
 from bot.services.groq_client import ask_ai
 from bot.services.memory import (
     set_mode,
@@ -23,7 +25,7 @@ SPEAKING_PROMPT = (
 )
 
 
-@router.callback_query(F.data == "mode_speaking")
+@router.callback_query(F.data == "mode_speaking", AuthorizedCallback(ALLOWED_USERS))
 async def speaking_start(callback: CallbackQuery):
     clear_dialog(callback.from_user.id)
     set_mode(callback.from_user.id, "speaking")
@@ -38,7 +40,7 @@ async def speaking_start(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.message(ModeFilter("speaking"), F.text)
+@router.message(ModeFilter("speaking"), F.text, AuthorizedUser(ALLOWED_USERS))
 async def speaking_handler(message: Message):
     level = get_level(message.from_user.id)
     dialog = get_dialog(message.from_user.id)
@@ -56,7 +58,7 @@ async def speaking_handler(message: Message):
     await message.answer(response, reply_markup=speaking_actions())
 
 
-@router.callback_query(F.data == "speaking_stop")
+@router.callback_query(F.data == "speaking_stop", AuthorizedCallback(ALLOWED_USERS))
 async def speaking_stop(callback: CallbackQuery):
     clear_dialog(callback.from_user.id)
     set_mode(callback.from_user.id, "chat")

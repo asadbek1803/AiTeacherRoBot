@@ -1,6 +1,8 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
+from bot.filters.auth import AuthorizedUser, AuthorizedCallback
 from bot.filters.mode import ModeFilter
+from config import ALLOWED_USERS
 from bot.services.groq_client import ask_ai
 from bot.services.memory import set_mode, get_level
 from bot.keyboards.menus import main_menu
@@ -19,7 +21,7 @@ GRAMMAR_PROMPT = (
 )
 
 
-@router.callback_query(F.data == "mode_grammar")
+@router.callback_query(F.data == "mode_grammar", AuthorizedCallback(ALLOWED_USERS))
 async def grammar_mode_set(callback: CallbackQuery):
     set_mode(callback.from_user.id, "grammar")
     await callback.message.edit_text(
@@ -31,7 +33,7 @@ async def grammar_mode_set(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.message(ModeFilter("grammar"), F.text)
+@router.message(ModeFilter("grammar"), F.text, AuthorizedUser(ALLOWED_USERS))
 async def grammar_handler(message: Message):
     level = get_level(message.from_user.id)
     response = await ask_ai(GRAMMAR_PROMPT, message.text, level)
