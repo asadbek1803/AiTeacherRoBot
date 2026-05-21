@@ -14,10 +14,10 @@ dp = Dispatcher()
 
 dp.include_routers(
     start.router,
+    admin.router,
     chat.router,
     settings.router,
     usage.router,
-    admin.router,
     auth_router,
 )
 

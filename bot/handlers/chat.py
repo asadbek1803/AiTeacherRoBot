@@ -17,7 +17,7 @@ with open(prompt_path, "r", encoding="utf-8") as f:
     CHAT_SYSTEM_PROMPT = f.read()
 
 
-@router.message(F.text, AuthorizedUser(ALLOWED_USERS))
+@router.message(F.text, ~F.text.startswith("/"), AuthorizedUser(ALLOWED_USERS))
 async def chat_handler(message: Message, bot: Bot):
     uid = message.from_user.id
     level = get_level(uid)
