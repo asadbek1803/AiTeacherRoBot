@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
+from aiogram.exceptions import TelegramBadRequest
 from config import ADMIN_IDS
 from bot.services.memory import get_pending_requests, approve_user, reject_user
 from bot.keyboards.menus import admin_menu, admin_request_keyboard
@@ -25,7 +26,11 @@ async def show_admin_panel(target: Message | CallbackQuery):
     if isinstance(target, Message):
         await target.answer(text, reply_markup=admin_menu(len(requests)))
     else:
-        await target.message.edit_text(text, reply_markup=admin_menu(len(requests)))
+        try:
+            await target.message.edit_text(text, reply_markup=admin_menu(len(requests)))
+        except TelegramBadRequest as e:
+            if "message is not modified" not in str(e):
+                raise
 
 
 @router.message(Command("admin"))
@@ -63,7 +68,11 @@ async def admin_show_requests(callback: CallbackQuery):
         f"📅 Sana: {req['created_at']}\n\n"
         f"So'rovlarning umumiy soni: {len(requests)}"
     )
-    await callback.message.edit_text(text, reply_markup=admin_request_keyboard(req['user_id']))
+    try:
+        await callback.message.edit_text(text, reply_markup=admin_request_keyboard(req['user_id']))
+    except TelegramBadRequest as e:
+        if "message is not modified" not in str(e):
+            raise
     await callback.answer()
 
 
@@ -74,7 +83,11 @@ async def admin_approve(callback: CallbackQuery):
         return
     user_id = int(callback.data.replace("admin_approve_", ""))
     approve_user(user_id)
-    await callback.message.edit_text(f"✅ Foydalanuvchi <code>{user_id}</code> tasdiqlandi.")
+    try:
+        await callback.message.edit_text(f"✅ Foydalanuvchi <code>{user_id}</code> tasdiqlandi.")
+    except TelegramBadRequest as e:
+        if "message is not modified" not in str(e):
+            raise
     try:
         await callback.bot.send_message(
             user_id,
@@ -92,7 +105,11 @@ async def admin_reject(callback: CallbackQuery):
         return
     user_id = int(callback.data.replace("admin_reject_", ""))
     reject_user(user_id)
-    await callback.message.edit_text(f"❌ Foydalanuvchi <code>{user_id}</code> rad etildi.")
+    try:
+        await callback.message.edit_text(f"❌ Foydalanuvchi <code>{user_id}</code> rad etildi.")
+    except TelegramBadRequest as e:
+        if "message is not modified" not in str(e):
+            raise
     try:
         await callback.bot.send_message(
             user_id,
